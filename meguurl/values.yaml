@@ -106,6 +106,22 @@ postgres:
         cpu: 500m
         memory: 512Mi
 
+qrcode:
+    name: meguurl-qrcode
+    image:
+        repo: tomcheese/qr-code-generator
+        tag: latest
+    service:
+        port: 8000
+    deployment:
+        port: 8000
+    resources:
+        requests:
+            cpu: 50m
+            memory: 64Mi
+        limits:
+            cpu: 200m
+            memory: 128Mi
 service:
     type: ClusterIP
     protocol: TCP

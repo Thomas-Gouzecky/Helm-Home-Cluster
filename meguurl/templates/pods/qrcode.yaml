@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: {{ .Values.qrcode.name }}
+    labels:
+        app: {{ .Values.qrcode.name }}
+
+spec:
+    selector:
+        app: {{ .Values.qrcode.name }}
+
+    ports:
+        - name: "{{ .Values.qrcode.service.port }}-{{ .Values.qrcode.deployment.port }}"
+          port: {{ .Values.qrcode.service.port }}
+          protocol: {{ .Values.service.protocol }}
+          targetPort: {{ .Values.qrcode.deployment.port }}
+
+    type: {{ .Values.service.type }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ .Values.qrcode.name }}
+    labels:
+        app: {{ .Values.qrcode.name }}
+
+spec:
+    replicas: {{ .Values.replicaCount }}
+
+    selector:
+        matchLabels:
+            app: {{ .Values.qrcode.name }}
+    template:
+        metadata:
+            labels:
+                app: {{ .Values.qrcode.name }}
+        spec:
+            containers:
+                - name: "{{ .Values.qrcode.name }}-repo"
+                  image: "{{ .Values.qrcode.image.repo }}:{{ .Values.qrcode.image.tag }}"
+                  imagePullPolicy: {{ .Values.imagePullPolicy }}
+                  resources: 
+                    {{- toYaml .Values.qrcode.resources | nindent 20 }}
