@@ -122,6 +122,29 @@ qrcode:
         limits:
             cpu: 200m
             memory: 128Mi
+
+redis:
+    name: meguurl-redis
+    image:
+        repo: redis
+        tag: "8.10"
+    service:
+        port: 6379
+    statefulSet:
+        port: 6379
+    persistence:
+        name: redis-storage
+        enabled: true
+        accessMode: ReadWriteOnce
+        storageClass: standard
+        size: 5Gi
+    requests:
+        cpu: 50m
+        memory: 64Mi
+    limits:
+        cpu: 200m
+        memory: 128Mi
+
 service:
     type: ClusterIP
     protocol: TCP

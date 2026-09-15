@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: {{ .Values.redis.name }}
+    labels:
+        app: {{ .Values.redis.name }}
+spec:
+    selector:
+        app: {{ .Values.redis.name }}
+    ports:
+        - name: "{{ .Values.redis.service.port }}-{{ .Values.redis.statefulSet.port }}"
+          port: {{ .Values.redis.service.port }}
+          protocol: {{ .Values.service.protocol }}
+          targetPort: {{ .Values.redis.statefulSet.port }}
+
+    type: {{ .Values.service.type }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: {{ .Values.redis.name }}
+spec:
+    serviceName: {{ .Values.redis.name }}
+    replicas: {{ .Values.replicaCount }}
+    selector:
+        matchLabels:
+            app: {{ .Values.redis.name }}
+    template:
+        metadata:
+            labels:
+                app: {{ .Values.redis.name }}
+        spec:
+            containers:
+                - name: "{{ .Values.redis.name }}-repo"
+                  image: "{{ .Values.redis.image.repo }}:{{ .Values.redis.image.tag }}"
+                  imagePullPolicy: {{ .Values.imagePullPolicy }}
+                  ports:
+                      - containerPort: {{ .Values.redis.statefulSet.port}}
+                        name: {{ .Values.redis.name }}
+                  volumeMounts:
+                      - name: {{ .Values.redis.persistence.name }}
+                        mountPath: /data
+                  resources:
+                      {{- toYaml .Values.redis.resources | nindent 20 }}
+    volumeClaimTemplates:
+        - metadata:
+              name: {{ .Values.redis.persistence.name }}
+          spec:
+              accessModes:
+                  - {{ .Values.redis.persistence.accessMode }}
+              storageClassName: {{ .Values.redis.persistence.storageClass }}
+              resources:
+                  requests:
+                      storage: {{ .Values.redis.persistence.size }}

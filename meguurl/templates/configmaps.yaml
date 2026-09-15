@@ -6,6 +6,7 @@ data:
     ApiSettings__BackendApi: https://{{ .Values.backend.name }}:{{ .Values.backend.service.port }}/
     ApiSettings__DatabaseApi: http://{{ .Values.dbAPI.name }}:{{ .Values.dbAPI.service.port }}/
     ApiSettings__QrCodeApi: http://{{ .Values.qrcode.name }}:{{ .Values.qrcode.service.port }}/
+    ApiSettings__Redis: "{{ .Values.redis.name }}:{{ .Values.redis.service.port }}"
     ASPNETCORE_USE_K8S_TLS: "true"
 ---
 apiVersion: v1
