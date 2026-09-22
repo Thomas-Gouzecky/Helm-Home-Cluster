@@ -48,19 +48,19 @@ Add a `secrets.yaml` file in the `meguurl/templates` directory. The file should 
 apiVersion: v1
 kind: Secret
 metadata:
-    name: {{ .Values.dbAPI.secretName }}
+    name: { { .Values.dbAPI.secretName } }
 type: Opaque
 stringData:
     DATABASE_USER: postgres
     DATABASE_PASSWORD: CHANGE_ME
-    DATABASE_HOST: {{ .Values.postgres.name }}
+    DATABASE_HOST: { { .Values.postgres.name } }
     DATABASE_PORT: "5432"
     DATABASE_NAME: meguURL
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-    name: {{ .Values.postgres.secretName }}
+    name: { { .Values.postgres.secretName } }
 type: Opaque
 stringData:
     POSTGRES_PASSWORD: CHANGE_ME
@@ -149,6 +149,15 @@ Restart the cert-downloader so it can mount the CA bundle:
 
 ```bash
 kubectl rollout restart deployment/cert-downloader -n cert-downloader
+```
+
+### Kubeview (Visualize the Cluster)
+
+```bash
+helm install kubeview kubeview \
+    --namespace kubeview \
+    --create-namespace \
+    -f clusterValues.yaml
 ```
 
 ## 6. Verify the Installation
