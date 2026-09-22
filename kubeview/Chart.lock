@@ -1,0 +1,6 @@
+dependencies:
+- name: kubeview
+  repository: https://code.benco.io/kubeview/deploy/helm
+  version: 2.2.1
+digest: sha256:92ef375a2a634c5bf8ef8a0ab9000883ff1380c49304f0b492f83937d9a22c0b
+generated: "2026-09-22T11:54:35.1109567-04:00"
