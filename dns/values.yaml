@@ -26,6 +26,7 @@ configmap:
               - megu.url
               - api.megu.url
               - cert-downloader.home.arpa
+              - kubeview.local
 service:
     name: coredns-service
     nodePort:
