@@ -1,0 +1,10 @@
+gateway:
+    name: kubeview-gateway
+
+route:
+    name: kubeview-route
+    hostName: kubeview.local
+
+pod:
+    name: kubeview
+    port: 8000
