@@ -1,0 +1,33 @@
+imagePullPolicy: Always
+
+replicaCount: 1
+
+postgres:
+    name: postgres
+    image:
+        repo: postgres
+        tag: "18"
+    service:
+        port: 5432
+    statefulSet:
+        port: 5432
+    secretName: postgres-secret
+    persistence:
+        name: postgres-storage
+        enabled: true
+        accessMode: ReadWriteOnce
+        storageClass: standard
+        size: 10Gi
+    requests:
+        cpu: 100m
+        memory: 256Mi
+    limits:
+        cpu: 500m
+        memory: 512Mi
+
+service:
+    type: ClusterIP
+    protocol: TCP
+    port:
+        HTTP: 80
+        HTTPS: 443
