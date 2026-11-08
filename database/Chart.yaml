@@ -1,0 +1,7 @@
+apiVersion: v2
+name: postgres database
+description: The central postgres instance for all future applications.
+type: application
+
+version: 0.1.0
+appVersion: "1.0.0"
