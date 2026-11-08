@@ -4,9 +4,9 @@ replicaCount: 1
 
 certificate:
     gateway:
-        name: meguurl-gateway-tls
-    backend:
-        name: kestrel-backend-tls
+        name: auth-service-gateway-tls
+    auth-service:
+        name: auth-service-tls
     caBundle:
         name: local-ca
 
@@ -15,8 +15,32 @@ gatewayClass:
     controllerName: traefik.io/gateway-controller
 
 gateway:
-    name: meguurl-gateway
-    tlsSecretName: gateway-tls-secret
+    name: auth-service-gateway
+    tlsSecretName: auth-service-gateway-tls-secret
+
+auth:
+    route:
+        name: auth-service-route
+        hostName: auth.tomcheese.com
+
+    name: auth-service
+    service:
+        port: 8080
+    deployment:
+        port: 8080
+    image:
+        repo: tomcheese/auth-service
+        tag: latest
+    configmap:
+        name: auth-service-config
+    resources:
+        requests:
+            cpu: 50m
+            memory: 64Mi
+        limits:
+            cpu: 200m
+            memory: 128Mi
+    tlsSecretName: auth-service-tls-secret
 
 service:
     type: ClusterIP
