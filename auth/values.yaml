@@ -41,6 +41,7 @@ auth:
             cpu: 200m
             memory: 128Mi
     tlsSecretName: auth-service-tls-secret
+    tlsHostName: auth-service.auth.svc.cluster.local
 
 service:
     type: ClusterIP
