@@ -1,0 +1,26 @@
+imagePullPolicy: Always
+
+replicaCount: 1
+
+certificate:
+    gateway:
+        name: meguurl-gateway-tls
+    backend:
+        name: kestrel-backend-tls
+    caBundle:
+        name: local-ca
+
+gatewayClass:
+    name: traefik-class
+    controllerName: traefik.io/gateway-controller
+
+gateway:
+    name: meguurl-gateway
+    tlsSecretName: gateway-tls-secret
+
+service:
+    type: ClusterIP
+    protocol: TCP
+    port:
+        HTTP: 80
+        HTTPS: 443
