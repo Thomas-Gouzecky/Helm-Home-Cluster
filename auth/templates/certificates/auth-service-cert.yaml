@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+    name: {{ .Values.certificate.auth.name}}
+spec:
+    secretName: {{ .Values.auth.tlsSecretName }}
+    issuerRef:
+        name: {{ .Values.ca.clusterIssuer.name }}
+        kind: ClusterIssuer
+    dnsNames:
+        - {{ .Values.auth.name }}
+        - "{{ .Values.auth.name }}.{{ .Release.Namespace }}"
+        - "{{ .Values.auth.name }}.{{ .Release.Namespace }}.svc"
+        - "{{ .Values.auth.name }}.{{ .Release.Namespace }}.svc.cluster.local"

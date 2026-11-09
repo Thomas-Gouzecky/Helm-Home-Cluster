@@ -5,7 +5,7 @@ replicaCount: 1
 certificate:
     gateway:
         name: auth-service-gateway-tls
-    auth-service:
+    auth:
         name: auth-service-tls
     caBundle:
         name: local-ca
