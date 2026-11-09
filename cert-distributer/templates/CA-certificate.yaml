@@ -6,6 +6,7 @@ spec:
     isCA: true
     commonName: {{ .Values.ca.certificate.commonName }}
     secretName: {{ .Values.ca.certificate.secretName }}
+    duration: {{ .Values.ca.certificate.duration }}
     issuerRef:
         name: {{ .Values.ca.bootstrapIssuer.name }}
         kind: {{ .Values.ca.bootstrapIssuer.kind }}

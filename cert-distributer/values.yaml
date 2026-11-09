@@ -6,6 +6,7 @@ ca:
         name: local-ca
         commonName: Local CA Certificate
         secretName: local-ca-secret
+        duration: 131400h # 15 years
     bundle:
         name: local-ca
 testService:
