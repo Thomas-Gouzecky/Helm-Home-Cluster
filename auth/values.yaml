@@ -33,6 +33,7 @@ auth:
         tag: latest
     configmap:
         name: auth-service-config
+    secretName: auth-service-secret
     resources:
         requests:
             cpu: 50m

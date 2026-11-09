@@ -46,6 +46,8 @@ spec:
                   envFrom:
                       - configMapRef:
                             name: {{ .Values.auth.configmap.name }}
+                      - secretRef:
+                            name: {{ .Values.auth.secretName }}
                   resources:
                       {{- toYaml .Values.auth.resources | nindent 20 }}
                   livenessProbe:

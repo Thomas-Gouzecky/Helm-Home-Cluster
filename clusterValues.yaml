@@ -7,3 +7,6 @@ ca:
 gatewayClass:
     name: traefik-class
     controllerName: traefik.io/gateway-controller
+
+postgres:
+    name: postgres
