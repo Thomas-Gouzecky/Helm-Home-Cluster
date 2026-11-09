@@ -48,6 +48,25 @@ spec:
                             name: {{ .Values.auth.configmap.name }}
                   resources:
                       {{- toYaml .Values.auth.resources | nindent 20 }}
+                  livenessProbe:
+                      httpGet:
+                          path: /health
+                          port: {{ .Values.auth.deployment.port }}
+                          scheme: HTTPS
+                      initialDelaySeconds: 15
+                      periodSeconds: 20
+                      timeoutSeconds: 5
+                      failureThreshold: 3
+
+                  readinessProbe:
+                      httpGet:
+                          path: /health
+                          port: {{ .Values.auth.deployment.port }}
+                          scheme: HTTPS
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                      timeoutSeconds: 5
+                      failureThreshold: 3
 
             volumes:
                 - name: auth-service-tls
