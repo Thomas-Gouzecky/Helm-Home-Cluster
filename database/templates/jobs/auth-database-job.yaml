@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: {{ .Values.postgres.name }}-auth-database
+    annotations:
+        helm.sh/hook: post-install,post-upgrade
+        helm.sh/hook-delete-policy: before-hook-creation
+spec:
+    backoffLimit: 6
+    template:
+        spec:
+            restartPolicy: OnFailure
+            containers:
+                - name: create-auth-database
+                  image: "{{ .Values.postgres.image.repo }}:{{ .Values.postgres.image.tag }}"
+                  imagePullPolicy: {{ .Values.imagePullPolicy }}
+                  envFrom:
+                      - secretRef:
+                            name: {{ .Values.postgres.secretName }}
+                  env:
+                      - name: PGPASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: {{ .Values.postgres.secretName }}
+                                key: POSTGRES_PASSWORD
+                  command:
+                      - sh
+                      - -c
+                      - |
+                          until pg_isready -h {{ .Values.postgres.name }} -U "$POSTGRES_USER"; do
+                              sleep 2
+                          done
+
+                          if psql -h {{ .Values.postgres.name }} -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
+                              "SELECT 1 FROM pg_database WHERE datname = 'auth'" | grep -qx 1; then
+                              exit 0
+                          fi
+
+                          psql -v ON_ERROR_STOP=1 -h {{ .Values.postgres.name }} -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+                              -c 'CREATE DATABASE auth'
