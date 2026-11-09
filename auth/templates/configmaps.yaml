@@ -4,4 +4,5 @@ metadata:
     name: {{ .Values.auth.configmap.name }}
 data:
     ASPNETCORE_URLS: https://+:8080
-    ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/auth-service.pfx"
+    ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/tls.crt"
+    ASPNETCORE_Kestrel__Certificates__Default__KeyPath: "/https/tls.key"
