@@ -43,6 +43,12 @@ auth:
             memory: 128Mi
     tlsSecretName: auth-service-tls-secret
     tlsHostName: auth-service.auth.svc.cluster.local
+    migration:
+        image:
+            repo: tomcheese/auth-migrations
+            tag: latest
+        command:
+            - --migrate
 
 service:
     type: ClusterIP

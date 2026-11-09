@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: {{ .Values.auth.name }}-database-migration
+    annotations:
+        helm.sh/hook: post-install,post-upgrade
+        helm.sh/hook-delete-policy: before-hook-creation
+spec:
+    backoffLimit: 6
+    template:
+        spec:
+            restartPolicy: OnFailure
+            initContainers:
+                - name: wait-for-postgres
+                  image: postgres:18
+                  imagePullPolicy: {{ .Values.imagePullPolicy }}
+                  envFrom:
+                      - secretRef:
+                            name: {{ .Values.auth.secretName }}
+                  command:
+                      - sh
+                      - -c
+                      - |
+                          until pg_isready -h postgres.database.svc.cluster.local -p 5432; do
+                              sleep 2
+                          done
+            containers:
+                - name: database-migration
+                  image: "{{ .Values.auth.migration.image.repo }}:{{ .Values.auth.migration.image.tag }}"
+                  imagePullPolicy: {{ .Values.imagePullPolicy }}
+                  envFrom:
+                      - secretRef:
+                            name: {{ .Values.auth.secretName }}
+                  args:
+                      {{- toYaml .Values.auth.migration.command | nindent 22 }}
