@@ -21,7 +21,7 @@ gateway:
 auth:
     route:
         name: auth-service-route
-        hostName: auth.tomcheese.com
+        hostName: auth.tomcheese.ca
 
     name: auth-service
     service:

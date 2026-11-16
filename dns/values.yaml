@@ -27,7 +27,7 @@ configmap:
               - api.megu.url
               - cert-downloader.home.arpa
               - kubeview.local
-              - auth.tomcheese.com
+              - auth.tomcheese.ca
 service:
     name: coredns-service
     nodePort:
