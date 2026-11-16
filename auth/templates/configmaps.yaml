@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
     name: {{ .Values.auth.configmap.name }}
 data:
-    ASPNETCORE_URLS: https://+:8080
+    ASPNETCORE_URLS: https://+:8443
     ASPNETCORE_Kestrel__Certificates__Default__Path: "/certs/tls.crt"
     ASPNETCORE_Kestrel__Certificates__Default__KeyPath: "/certs/tls.key"
+    Application__BaseUrl: "https://{{ .Values.auth.route.hostName }}/"
+    EmailService__BaseUrl: "http://email-service.shared-services.svc.cluster.local:8080/api/"

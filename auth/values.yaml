@@ -25,12 +25,12 @@ auth:
 
     name: auth-service
     service:
-        port: 8080
+        port: 8443
     deployment:
-        port: 8080
+        port: 8443
     image:
         repo: tomcheese/auth-service
-        tag: latest
+        tag: 0.4.0
     configmap:
         name: auth-service-config
     secretName: auth-service-secret
