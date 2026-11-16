@@ -1,0 +1,28 @@
+imagePullPolicy: Always
+
+replicaCount: 1
+
+email:
+    name: email-service
+    service:
+        port: 8080
+    deployment:
+        port: 8080
+    image:
+        repo: tomcheese/email-service
+        tag: 0.1.1
+    secretName: email-service-secret
+    resources:
+        requests:
+            cpu: 50m
+            memory: 64Mi
+        limits:
+            cpu: 200m
+            memory: 128Mi
+
+service:
+    type: ClusterIP
+    protocol: TCP
+    port:
+        HTTP: 80
+        HTTPS: 443
