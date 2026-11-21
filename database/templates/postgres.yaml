@@ -56,6 +56,11 @@ spec:
                 - name: "{{ .Values.postgres.name }}-repo"
                   image: "{{ .Values.postgres.image.repo }}:{{ .Values.postgres.image.tag }}"
                   imagePullPolicy: {{ .Values.imagePullPolicy }}
+                  command:
+                      - "docker-entrypoint.sh"
+                      - "postgres"
+                      - "-c"
+                      - "wal_level=logical"
                   ports:
                       - containerPort: {{ .Values.postgres.statefulSet.port}}
                         name: {{ .Values.postgres.name }}
@@ -72,7 +77,7 @@ spec:
                           command:
                               - sh
                               - -c
-                              - "pg_isready -U $POSTGRES_USER"
+                              - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
                       initialDelaySeconds: 5
                       periodSeconds: 10
                   livenessProbe:
@@ -80,7 +85,7 @@ spec:
                           command:
                               - sh
                               - -c
-                              - "pg_isready -U $POSTGRES_USER"
+                              - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
                       initialDelaySeconds: 5
                       periodSeconds: 10
     volumeClaimTemplates:

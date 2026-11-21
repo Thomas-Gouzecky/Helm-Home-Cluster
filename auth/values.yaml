@@ -49,6 +49,12 @@ auth:
             tag: 0.6.0
         command:
             - --migrate
+    outbox:
+        role:
+            name: debezium
+            password: postgres
+        publication:
+            name: outbox_publication
 
 service:
     type: ClusterIP

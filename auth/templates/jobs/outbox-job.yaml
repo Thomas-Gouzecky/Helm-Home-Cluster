@@ -1,0 +1,100 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: {{ .Values.auth.name }}-outbox-config
+    annotations:
+        helm.sh/hook: post-install,post-upgrade
+        helm.sh/hook-delete-policy: before-hook-creation
+        helm.sh/hook-weight: "10"
+spec:
+    backoffLimit: 12
+    template:
+        spec:
+            restartPolicy: OnFailure
+            containers:
+                - name: configure-outbox
+                  image: postgres:18
+                  imagePullPolicy: {{ .Values.imagePullPolicy }}
+                  envFrom:
+                      - secretRef:
+                            name: {{ .Values.auth.secretName }}
+                  env:
+                      - name: PGPASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: {{ .Values.auth.secretName }}
+                                key: POSTGRES_PASSWORD
+                  command:
+                      - sh
+                      - -c
+                      - |
+                          set -e
+
+                          attempts=0
+                          until pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER"; do
+                              attempts=$((attempts + 1))
+                              if [ "$attempts" -ge 60 ]; then
+                                  echo "PostgreSQL did not become ready within 120 seconds" >&2
+                                  exit 1
+                              fi
+                              sleep 2
+                          done
+
+                          if ! psql -v ON_ERROR_STOP=1 \
+                              -h "$POSTGRES_HOST" \
+                              -p "$POSTGRES_PORT" \
+                              -U "$POSTGRES_USER" \
+                              -d "$POSTGRES_DB" \
+                              -Atqc "SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'outbox'" \
+                              | grep -qx 1; then
+                              echo "Database table public.outbox does not exist; verify the database migration completed" >&2
+                              exit 1
+                          fi
+
+                          psql -v ON_ERROR_STOP=1 \
+                              -h "$POSTGRES_HOST" \
+                              -p "$POSTGRES_PORT" \
+                              -U "$POSTGRES_USER" \
+                              -d "$POSTGRES_DB" \
+                              <<'SQL'
+                          DO $body$
+                          BEGIN
+                              IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{{ .Values.auth.outbox.role.name }}') THEN
+                                  CREATE ROLE {{ .Values.auth.outbox.role.name }}
+                                  WITH LOGIN
+                                  REPLICATION
+                                  PASSWORD '{{ .Values.auth.outbox.role.password }}';
+                              ELSE
+                                  ALTER ROLE {{ .Values.auth.outbox.role.name }}
+                                  WITH LOGIN
+                                  REPLICATION
+                                  PASSWORD '{{ .Values.auth.outbox.role.password }}';
+                              END IF;
+                          END
+                          $body$;
+
+                          GRANT CONNECT ON DATABASE auth TO {{ .Values.auth.outbox.role.name }};
+                          GRANT CREATE ON DATABASE auth TO {{ .Values.auth.outbox.role.name }};
+                          GRANT USAGE ON SCHEMA public TO {{ .Values.auth.outbox.role.name }};
+                          GRANT SELECT ON TABLE public.outbox TO {{ .Values.auth.outbox.role.name }};
+
+                          DO $body$
+                          BEGIN
+                              IF NOT EXISTS (
+                                  SELECT FROM pg_publication WHERE pubname = '{{ .Values.auth.outbox.publication.name }}'
+                              ) THEN
+                                  CREATE PUBLICATION {{ .Values.auth.outbox.publication.name }}
+                                  FOR TABLE public.outbox;
+                              ELSIF NOT EXISTS (
+                                  SELECT
+                                  FROM pg_publication_tables
+                                  WHERE pubname = '{{ .Values.auth.outbox.publication.name }}'
+                                    AND schemaname = 'public'
+                                    AND tablename = 'outbox'
+                              ) THEN
+                                  ALTER PUBLICATION {{ .Values.auth.outbox.publication.name }}
+                                  ADD TABLE public.outbox;
+                              END IF;
+                          END
+                          $body$;
+                          SQL
