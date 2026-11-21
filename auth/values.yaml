@@ -30,7 +30,7 @@ auth:
         port: 8443
     image:
         repo: tomcheese/auth-service
-        tag: 0.4.1
+        tag: 0.6.0
     configmap:
         name: auth-service-config
     secretName: auth-service-secret
@@ -46,7 +46,7 @@ auth:
     migration:
         image:
             repo: tomcheese/auth-migrations
-            tag: latest
+            tag: 0.6.0
         command:
             - --migrate
 
