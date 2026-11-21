@@ -1,0 +1,77 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaConnect
+metadata:
+  name: {{ .Values.kafka.connect.name }}
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+
+spec:
+  version: {{ .Values.kafka.version | quote }}
+  replicas: {{ .Values.kafka.connect.replicas }}
+
+  bootstrapServers: {{ .Values.kafka.name }}-kafka-bootstrap.{{ .Release.Namespace }}.svc:9092
+
+  groupId: connect-cluster
+  configStorageTopic: connect-cluster-configs
+  offsetStorageTopic: connect-cluster-offsets
+  statusStorageTopic: connect-cluster-status
+
+  config:
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+
+  build:
+    output:
+      type: docker
+      image: "{{ .Values.kafka.connect.image.repository }}:{{ .Values.kafka.connect.image.tag }}"
+      {{- if .Values.kafka.connect.pushSecret }}
+      pushSecret: {{ .Values.kafka.connect.pushSecret }}
+      {{- end }}
+    plugins:
+      - name: debezium-postgres-connector
+        artifacts:
+          - type: tgz
+            url: https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/3.5.0.Final/debezium-connector-postgres-3.5.0.Final-plugin.tar.gz
+
+  {{- if .Values.kafka.connect.imagePullSecret }}
+  template:
+    pod:
+      imagePullSecrets:
+        - name: {{ .Values.kafka.connect.imagePullSecret }}
+  {{- end }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaConnector
+metadata:
+  name: {{ .Values.kafka.connect.connector.name }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.connect.name }}
+spec:
+  class: io.debezium.connector.postgresql.PostgresConnector
+  tasksMax: {{ .Values.kafka.connect.connector.tasksMax }}
+  
+  config:
+    database.hostname: {{ .Values.kafka.connect.database.host }}
+    database.port: {{ .Values.kafka.connect.database.port | quote }}
+    database.user: {{ .Values.kafka.connect.database.user }}
+    database.password: {{ .Values.kafka.connect.database.password | quote }}
+    database.dbname: {{ .Values.kafka.connect.database.name }}
+    topic.prefix: {{ .Values.kafka.connect.connector.topicPrefix }}
+    table.include.list: {{ .Values.kafka.connect.connector.tableIncludeList | quote }}
+    publication.name: {{ .Values.kafka.connect.connector.publicationName }}
+    slot.name: {{ .Values.kafka.connect.connector.slotName }}
+    plugin.name: pgoutput
+    snapshot.mode: initial
+    publication.autocreate.mode: filtered
+
+    transforms: "outbox"
+    transforms.outbox.type: "io.debezium.transforms.outbox.EventRouter"
+    transforms.outbox.table.field.event.id: id
+    transforms.outbox.table.field.event.key: "aggregate_id"
+    transforms.outbox.table.field.event.type: "event_type"
+    transforms.outbox.table.field.event.payload: "payload"
+    transforms.outbox.route.by.field: "aggregate_type"
+    transforms.outbox.route.topic.replacement: "auth.events"
+
+    tombstones.on.delete: false

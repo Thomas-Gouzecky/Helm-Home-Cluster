@@ -8,3 +8,24 @@ kafka:
     name: kafka
     version: "4.3.2"
     metadataVersion: "4.3"
+    connect:
+        name: debezium-connect
+        replicas: 1
+        image:
+            repository: docker.io/tomcheese/debezium-connect
+            tag: latest
+        pushSecret: dockerhub-auth
+        imagePullSecret: dockerhub-auth
+        database:
+            host: postgres.database.svc.cluster.local
+            port: "5432"
+            name: auth
+            user: debezium
+            password: postgres
+        connector:
+            name: auth-outbox
+            tasksMax: 1
+            topicPrefix: auth
+            tableIncludeList: "public.outbox"
+            publicationName: outbox_publication
+            slotName: auth_outbox
